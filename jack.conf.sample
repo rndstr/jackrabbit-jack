@@ -1,0 +1,16 @@
+# use * for newest available locally
+rabbitVersion="2.3.1-jackalope-SNAPSHOT"
+
+# one per line
+mirrors="https://s3-eu-west-1.amazonaws.com/patched-jackrabbit/"
+
+# comma separated list of extensions to load
+extensions="nzz"
+
+# jackrabbit port
+port=8080
+
+# where to create the jackrabbit db
+dir="./jackrabbit"
+
+javaArgs="-Xmx512m -Xms512m"

@@ -1,0 +1,30 @@
+#!/bin/sh
+#
+# Sample extension
+#
+
+action=$1; shift
+port=$1; shift
+args=$*
+
+case "$action" in
+    usage)
+        echo    "sample extension:"
+        echo -e "  sample\t\tPrints hi."
+        echo
+        ;;
+
+
+    # New actions
+    sample)
+        echo "hi."
+        ;;
+
+    *)
+        # not found
+        exit 1
+        ;;
+esac
+
+# action was processed
+exit 0

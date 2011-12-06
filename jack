@@ -1,0 +1,212 @@
+#!/bin/bash
+#
+# Author:  roland.schilter@liip.ch
+# URL:     http://github.com/rndstr/jack
+# License: MIT
+
+cd $(dirname $0)
+
+# Default settings, see jack.conf.sample for customization
+rabbitVersion="2.3.1-jackalope-SNAPSHOT"
+mirrors="https://s3-eu-west-1.amazonaws.com/patched-jackrabbit/"
+extensions=
+port=8080
+dir="./jackrabbit"
+javaArgs="-Xmx512m -Xms512m"
+
+
+# GO
+
+[ -f jack.conf ] && source jack.conf
+
+action="$1"; shift
+args="$*"
+
+pidfile=${TMPDIR:-/tmp}/jack-${port}.pid
+jar=
+
+usage() {
+    echo "usage: $(basename $0) <action> [args]"
+    echo
+    echo    "actions:"
+    echo -e "  start\t\tStart jackrabbit in the background with the given arguments"
+    echo -e "  stop\t\tStop jackrabbit"
+    echo -e "  restart\tRestart jackrabbit"
+    echo -e "  status\tPrint current status of jackrabbit (running, stopped)"
+    echo -e "  log\t\tTails the logfile"
+    echo -e "  clear\t\tResets index"
+    echo -e "  flush\t\tWipes the db"
+    echo -e "  register\tRegister system node types"
+    echo -e "  usage\t\t This."
+    echo
+}
+
+if [ -z "$action" ]; then
+    action="usage"
+fi
+
+# kills jackrabbit and sleeps till process dies
+# prints the id of the process previously active process (or empty if it wasn't running)
+stop_jackrabbit() {
+    local id=$(cat $pidfile 2>/dev/null)
+
+    if [ -n "$id" ]; then
+        kill $id 2>/dev/null
+
+        # wait till process dies
+        kill -0 $id
+        while [[ $? -eq 0 ]]; do
+            sleep 1
+            kill -0 $id 2>/dev/null
+        done
+    fi
+    rm -f $pidfile
+    echo $id
+}
+
+verify_jackrabbit() {
+    local name="jackrabbit-standalone-$rabbitVersion.jar"
+    jar="$(ls -1 $name 2>/dev/null | tail -n 1)"
+
+    if [ -z "$jar" ]; then
+        if [ "$rabbitVersion" = "*" ]; then
+            echo "No file found matching $name"
+            echo "Get it at http://mirror.switch.ch/mirror/apache/dist/jackrabbit/"
+            exit 1
+        fi
+
+        read -p "$name not found. Download? [y/N] "
+        echo
+        if [[ ! $REPLY =~ [Yy] ]]; then
+            exit
+        fi
+        jar="$name"
+
+        echo "Be patient, this might take a minute..."
+        for m in $mirrors; do
+            url="${m%/}/$name"
+            echo -n "Downloading from $url"
+            code=$(curl -w %{http_code} -s $url -o jackrabbit.jar.tmp)
+            if [ $code != "200" ]; then
+                echo " [FAILED: $code]"
+                continue
+            fi
+            echo " [OKAY]"
+            mv jackrabbit.jar.tmp $name
+        done
+        rm -f jackrabbit.jar.tmp
+    fi
+}
+
+# starts jackrabbit in the background
+start_jackrabbit() {
+
+    verify_jackrabbit
+
+    if [ -e "$jar" ]; then
+
+        # already running?
+        if [ -e $pidfile ]; then
+            echo "jackrabbit seems to be running ($pidfile)"
+            echo "Use \`$(basename $0) restart\` or \`$(basename) stop\`"
+            exit 1
+        fi
+
+        echo "Starting in the background using: $jar"
+        java $javaArgs -jar $jar $args &
+        echo $! > $pidfile
+
+    else
+        echo "File not found: $jar"
+        exit 1
+    fi
+}
+
+status_jackrabbit() {
+    if [ ! -e $pidfile ]; then
+        echo "Stopped ($pidfile not found)"
+    else
+        echo "Running ($pidfile says $(cat $pidfile))"
+    fi
+}
+
+call_extensions() {
+    IFS=","
+    for e in $extensions; do
+        sh jack.$e $action $port $args
+        if [ $? -eq 0 ]; then
+            found=true
+        fi
+    done
+}
+
+
+found=true
+case "$action" in
+    clear)
+        wasrunning=$(stop_jackrabbit)
+        rm -rf $DIR/repository/index
+        call_extensions
+        echo 'Cleared repository and workspace.'
+        [ $wasrunning ] && start_jackrabbit
+        ;;
+
+    flush)
+        read -p "This will truncate the DB. Continue? [y/N]"
+        if [[ ! $REPLY =~ [Yy] ]]; then
+            exit
+        fi
+        wasrunning=$(stop_jackrabbit)
+        rm -rf $dir/repository/datastore
+        rm -rf $dir/repository/index
+        rm -rf $dir/version
+        call_extensions
+        echo 'Flushed repository and workspace.'
+        [ $wasrunning ] && start_jackrabbit
+        ;;
+
+    register)
+        app/console doctrine:phpcr:register-system-node-types --allow-update
+        extensions
+        ;;
+    log)
+        call_extensions
+        tail -f $dir/log/jackrabbit.log
+        ;;
+    stop)
+        stop_jackrabbit >/dev/null
+        call_extensions
+        ;;
+    restart)
+        stop_jackrabbit >/dev/null
+        start_jackrabbit
+        call_extensions
+        ;;
+    start)
+        start_jackrabbit
+        call_extensions
+        ;;
+    status)
+        status_jackrabbit
+        call_extensions
+        ;;
+    usage)
+        usage
+        call_extensions
+        ;;
+
+    *)
+        found=false
+        ;;
+esac
+
+
+if ! $found; then
+    call_extensions
+
+    if ! $found; then
+        echo "Unknown action: $action"
+        usage
+        exit 1
+    fi
+fi
