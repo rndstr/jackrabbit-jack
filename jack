@@ -108,7 +108,7 @@ start_jackrabbit() {
         # already running?
         if [ -e $pidfile ]; then
             echo "jackrabbit seems to be running ($pidfile)"
-            echo "Use \`$(basename $0) restart\` or \`$(basename) stop\`"
+            echo "Use \`$(basename $0) restart\` or \`$(basename $0) stop\`"
             exit 1
         fi
 

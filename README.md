@@ -3,6 +3,11 @@ Jack
 
 A script to download and control jackrabbit with support for project-specific extensions
 
+Installation
+------------
+
+`
+
 Usage
 -----
 
