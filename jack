@@ -167,7 +167,7 @@ case "$action" in
 
     register)
         app/console doctrine:phpcr:register-system-node-types --allow-update
-        extensions
+        call_extensions
         ;;
     log)
         call_extensions
