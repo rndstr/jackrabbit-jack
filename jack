@@ -18,6 +18,16 @@ javaArgs="-Xmx512m -Xms512m"
 # GO
 
 [ -f jack.conf ] && source jack.conf
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --config|-c) source $2; shift; shift
+            ;;
+        *) break;
+            ;;
+    esac
+done
+
+
 
 action="$1"; shift
 args="$*"
@@ -26,7 +36,7 @@ pidfile=${TMPDIR:-/tmp}/jack-${port}.pid
 jar=
 
 usage() {
-    echo "usage: $(basename $0) <action> [args]"
+    echo "usage: $(basename $0) [options] <action> [args]"
     echo
     echo    "actions:"
     echo -e "  start\t\tStart jackrabbit in the background with the given arguments"
@@ -131,7 +141,7 @@ status_jackrabbit() {
     if [ ! -e $pidfile ]; then
         echo "Stopped ($pidfile not found)"
     else
-        echo "Running ($pidfile says $(cat $pidfile))"
+        echo "Running (pid $(cat $pidfile))"
     fi
 }
 
