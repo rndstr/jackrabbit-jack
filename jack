@@ -122,7 +122,7 @@ start_jackrabbit() {
         echo $! > $pidfile
 
     else
-        echo "File not found: $jar"
+        echo "File not found: $jar" >&2
         exit 1
     fi
 }

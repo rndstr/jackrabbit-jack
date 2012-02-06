@@ -2,6 +2,8 @@
 #
 # Sample extension
 #
+# Note that even if you use the same action name here, the base
+# code block is executed nevertheless
 
 action=$1; shift
 port=$1; shift

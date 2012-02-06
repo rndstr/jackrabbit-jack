@@ -22,7 +22,7 @@ See output of `./jack usage`
 Settings
 --------
 
-Copy `jack.conf.sample` to `jack.conf` and adjust it.
+Copy `jack.conf.sample` into your project dir as `jack.conf` and adjust it accordingly.
 
 
 Project Extensions
