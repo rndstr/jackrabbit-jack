@@ -1,8 +1,8 @@
 # use * for newest available locally
-rabbitVersion="2.3.1-jackalope-SNAPSHOT"
+rabbitVersion="2.3.7"
 
 # one per line
-mirrors="https://s3-eu-west-1.amazonaws.com/patched-jackrabbit/"
+mirrors="http://mirror.switch.ch/mirror/apache/dist/jackrabbit/"
 
 # comma separated list of extensions to load
 extensions=""
