@@ -82,17 +82,22 @@ verify_jackrabbit() {
         fi
         jar="$name"
 
-        echo "Be patient, this might take a minute..."
+        versionMirrors=$mirrors
         for m in $mirrors; do
+            versionMirrors=$(echo -e "$versionMirrors\n${m%/}/$rabbitVersion")
+        done
+
+        echo "Be patient, this might take a minute..."
+        for m in $versionMirrors; do
             url="${m%/}/$name"
             echo -n "Downloading from $url"
             code=$(curl -w %{http_code} -s $url -o jackrabbit.jar.tmp)
-            if [ $code != "200" ]; then
-                echo " [FAILED: $code]"
-                continue
+            if [ $code == "200" ]; then
+                echo " [OKAY]"
+                mv jackrabbit.jar.tmp $name
+                break
             fi
-            echo " [OKAY]"
-            mv jackrabbit.jar.tmp $name
+            echo " [FAILED: $code]"
         done
         rm -f jackrabbit.jar.tmp
     fi
