@@ -37,7 +37,7 @@ usage() {
     echo -e "  clear\t\tResets index"
     echo -e "  flush\t\tWipes the db"
     echo -e "  register\tRegister system node types"
-    echo -e "  usage\t\t This."
+    echo -e "  usage\t\tThis."
     echo
 }
 

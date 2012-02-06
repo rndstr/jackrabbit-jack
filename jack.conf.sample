@@ -5,7 +5,7 @@ rabbitVersion="2.3.1-jackalope-SNAPSHOT"
 mirrors="https://s3-eu-west-1.amazonaws.com/patched-jackrabbit/"
 
 # comma separated list of extensions to load
-extensions="nzz"
+extensions=""
 
 # jackrabbit port
 port=8080
