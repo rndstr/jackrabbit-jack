@@ -38,6 +38,9 @@ jar=
 usage() {
     echo "usage: $(basename $0) [options] <action> [args]"
     echo
+    echo    "options:"
+    echo -e "  --config|-c <file>\tLoad config"
+    echo
     echo    "actions:"
     echo -e "  start\t\tStart jackrabbit in the background with the given arguments"
     echo -e "  stop\t\tStop jackrabbit"
