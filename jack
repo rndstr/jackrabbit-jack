@@ -225,6 +225,8 @@ if ! $found; then
     if ! $found; then
         echo "Unknown action: $action"
         usage
+        action="usage"
+        call_extensions
         exit 1
     fi
 fi
