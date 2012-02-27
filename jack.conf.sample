@@ -1,5 +1,5 @@
 # use * for newest available locally
-rabbitVersion="2.3.7"
+rabbitVersion="2.4.0"
 
 # one per line
 mirrors="http://mirror.switch.ch/mirror/apache/dist/jackrabbit/"
